@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+      - ./init.sh:/docker-entrypoint-initb.d/init.sh
+    environment:
+      - POSTGRES_DB=pollsdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    env_file:
+      - ./.env
+    entrypoint:
+      - ./entrypoint.sh
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
