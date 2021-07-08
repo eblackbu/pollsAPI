@@ -148,15 +148,3 @@ class PollUserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = PollUser
         fields = ('uuid', 'completed_polls')
-
-
-"""
-{
-    "poll": 4,
-    "answers": [
-    {"question": 1, "text": "DENIS", "text_list": []},
-    {"question": 2, "text":"18-25", "text_list": []},
-    {"question": 3, "text": "", "text_list": ["Война и мир", "Анна Каренина"]}
-]
-}
-"""

@@ -86,6 +86,27 @@ class CompletedPollViewSet(ListModelMixin, viewsets.GenericViewSet):
         return self.queryset.none()
 
     def create(self, request, *args, **kwargs):
+        """
+        Для сохранения ответов на опрос необходимо передать JSON следующего вида:
+        {
+            "poll": <id>
+            "answers": [
+                {"question": <number>, "text": <text or choice>, "text_list": <list of choices>},
+                ...
+            ]
+        }
+        Если ответ один (answer_type == "TEXT" | "ONE CHOICE") - записывается в text
+        Если ответов несколько (answer_type == "MULTIPLE_CHOICE") - в text_list
+        {
+            "poll": 4,
+            "answers": [
+            {"question": 1, "text": "DENIS", "text_list": []},
+            {"question": 2, "text":"18-25", "text_list": []},
+            {"question": 3, "text": "", "text_list": ["Война и мир", "Анна Каренина"]}
+        ]
+        }
+        """
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if CompletedPoll.objects.filter(poll=serializer.validated_data.get('poll'), user=request.user).exists():
@@ -105,6 +126,9 @@ class PollUserViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSe
         return self.serializer_mapping.get(self.action, PollUserListSerializer)
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        В детальном отображении инстанса пользователя показываются также все его пройденные опросы
+        """
         try:
             instance = PollUser.objects.get(uuid=kwargs.get('pk'))
         except PollUser.DoesNotExist:

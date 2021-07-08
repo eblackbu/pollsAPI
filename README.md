@@ -4,19 +4,30 @@
 Функционал для администратора системы:
 
 - авторизация в системе (регистрация не нужна) 
-  <code>POST /api/auth/login</code>
+  <code> /api-auth/login либо /admin </code>
 - добавление/изменение/удаление опросов. Атрибуты опроса: название, дата старта, дата окончания, описание. После создания поле "дата старта" у опроса менять нельзя
-  <code>POST /api/v1/polls/\<id\></code>
+  <code> /api/v1/polls/poll </code>
 - добавление/изменение/удаление вопросов в опросе. Атрибуты вопросов: текст вопроса, тип вопроса (ответ текстом, ответ с выбором одного варианта, ответ с выбором нескольких вариантов)
-  <code>POST /api/v1/questions/\<id\></code>
+  <code> /admin/polls/question </code>
 
 Функционал для пользователей системы:
 
 - получение списка активных опросов:
   <code>GET /api/v1/polls/?active=True </code>
-- прохождение опроса: в качестве идентификатора пользователя в API передаётся uuid, по которому сохраняются ответы пользователя на вопросы; один пользователь может участвовать в любом количестве опросов
-  <code>POST /api/v1/polls/complete</code>
+- прохождение опроса: 
+  <code>POST /api/v1/completed_polls </code>
 - получение пройденных пользователем опросов с детализацией по ответам (что выбрано) по ID уникальному пользователя
   <code>GET /api/v1/users/\<uuid\> </code>
 
 Технологии: Django 2.2.10, Django REST framework.
+
+## Запуск
+  - С помощью docker-compose: </br>
+    <code>
+    $ docker-compose up </code>
+  - Локально: </br> 
+    <code>
+    $ python manage.py migrate </br>
+    $ python manage.py load_trash </br>
+    $ python manage.py runserver \<port\>
+    </code>

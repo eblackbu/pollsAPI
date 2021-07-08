@@ -13,6 +13,9 @@ class PollFilter(filters.FilterSet):
         fields = ('actual', )
 
     def is_actual(self, queryset, name, value):
+        """
+        Для получения списков активных опросов - параметр actual=True
+        """
         return queryset.filter(end_date__gte=date.today()) if value else queryset
 
 
