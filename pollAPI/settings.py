@@ -63,7 +63,7 @@ ROOT_URLCONF = 'pollAPI.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
+        'DIRS': [BASE_DIR / '']
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -134,3 +134,7 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'polls.PollUser'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = 'login/'
+LOGOUT_URL = 'logout/'
+LOGIN_REDIRECT_URL = '/api/v1/completed_polls'

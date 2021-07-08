@@ -1,7 +1,6 @@
 import json
 from datetime import date
 
-from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -9,10 +8,29 @@ from polls.models import Poll, Question, AnswerChoice, CompletedPoll, PollUser
 
 
 class AnswerChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnswerChoice
+        fields = ('text',)
+
+
+class AnswerChoiceInCompletedPollSerializer(serializers.Serializer):
+    """
+    Если ответ один - записывается в text
+    Если ответов несколько - в text_list
+    """
+    question = serializers.IntegerField(min_value=1)
+    text = serializers.CharField(allow_blank=True)
+    text_list = serializers.ListField(child=serializers.CharField(), allow_empty=True)
 
     class Meta:
         model = AnswerChoice
-        fields = ('text', )
+        fields = ('question', 'text', 'text_list')
+
+    def create(self, validated_data):
+        return
+
+    def update(self, instance, validated_data):
+        return
 
 
 class QuestionCreateUpdateSerializer(serializers.ModelSerializer):
@@ -40,7 +58,6 @@ class PollDetailSerializer(serializers.ModelSerializer):
 
 
 class PollListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Poll
         fields = ('name', 'start_date', 'end_date', 'description')
@@ -73,28 +90,73 @@ class PollCreateUpdateSerializer(serializers.ModelSerializer):
         return data
 
 
-class CompletedPollSerializer(serializers.ModelSerializer):
+class CompletedPollCreateSerializer(serializers.ModelSerializer):
+    answers = AnswerChoiceInCompletedPollSerializer(many=True)
+
+    class Meta:
+        model = CompletedPoll
+        fields = ('poll', 'answers')
+
+    def validate(self, data):
+        poll = data.get('poll')
+        validated_data = {'poll': data.get('poll')}
+        answers = []
+
+        for answer in data.get('answers'):
+            try:
+                question = Question.objects.get(number=answer.get('question'), poll=poll)
+            except Question.DoesNotExist:
+                raise ValidationError(f'Вопроса под номером {answer.get("question")} не существует в опросе {poll.name}')
+            if question.answer_type == 'TEXT' and answer.get('text') is None:
+                raise ValidationError(f'Требуется ответ на вопрос "{question.text}"')
+            if question.answer_type == 'ONE CHOICE' and answer.get('text') not in \
+                    AnswerChoice.objects.filter(question=question).values_list('text', flat=True):
+                raise ValidationError(f'Данного варианта ответа не существует ({answer.get("text")})')
+            not_valid_answers = set(answer.get('text_list', [])) - \
+                                set(AnswerChoice.objects.filter(question=question).values_list('text', flat=True))
+            if question.answer_type == 'MULTIPLE CHOICE' and not_valid_answers:
+                raise ValidationError(f'Данных вариантов ответа не существует ({",".join(not_valid_answers)})')
+            answers.append({'question': question.text,
+                            'text': answer.get('text', ''),
+                            'text_list': answer.get('text_list', [])})
+
+        validated_data['answers'] = json.dumps(answers)
+        return validated_data
+
+
+class CompletedPollListSerializer(serializers.ModelSerializer):
     poll = serializers.CharField(source='poll.name', default='-')
     answers = serializers.SerializerMethodField()
 
     class Meta:
         model = CompletedPoll
-        fields = ('poll_name', 'answers')
+        fields = ('poll', 'answers')
 
     def get_answers(self, instance: CompletedPoll):
         return json.loads(instance.answers)
 
 
 class PollUserListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PollUser
-        fields = ('uuid', )
+        fields = ('uuid',)
 
 
 class PollUserDetailSerializer(serializers.ModelSerializer):
-    completed_polls = CompletedPollSerializer(many=True)
+    completed_polls = CompletedPollListSerializer(many=True)
 
     class Meta:
         model = PollUser
         fields = ('uuid', 'completed_polls')
+
+
+"""
+{
+    "poll": 4,
+    "answers": [
+    {"question": 1, "text": "DENIS", "text_list": []},
+    {"question": 2, "text":"18-25", "text_list": []},
+    {"question": 3, "text": "", "text_list": ["Война и мир", "Анна Каренина"]}
+]
+}
+"""
