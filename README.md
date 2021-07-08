@@ -26,6 +26,9 @@
     <code>
     $ docker-compose up </code>
   - Локально:  <br/>
-    - <code>$ python manage.py migrate </code>
-    - <code>$ python manage.py load_trash </code> 
-    - <code>$ python manage.py runserver <port\></code>
+    - <code>$ python3 -m venv venv </code>
+    - <code>$ source venv/bin/activate </code>
+    - <code>$(venv) pip install -r requirements.txt </code>  
+    - <code>$(venv) python manage.py migrate </code>
+    - <code>$(venv) python manage.py load_trash </code> 
+    - <code>$(venv) python manage.py runserver <port\></code>
