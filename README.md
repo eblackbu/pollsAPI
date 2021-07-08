@@ -22,12 +22,12 @@
 Технологии: Django 2.2.10, Django REST framework.
 
 ## Запуск
-  - С помощью docker-compose: <br/>
+  - С помощью docker-compose:  <br/>
     <code>
     $ docker-compose up </code>
-  - Локально: </br> 
+  - Локально:  <br/>
     <code>
-    $ python manage.py migrate\
-    $ python manage.py load_trash\
+    $ python manage.py migrate  \
+    $ python manage.py load_trash  \
     $ python manage.py runserver \<port\>
     </code>
