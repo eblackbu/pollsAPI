@@ -26,8 +26,6 @@
     <code>
     $ docker-compose up </code>
   - Локально:  <br/>
-    <code>
-    $ python manage.py migrate  \
-    $ python manage.py load_trash  \
-    $ python manage.py runserver \<port\>
-    </code>
+    - <code>$ python manage.py migrate </code>
+    - <code>$ python manage.py load_trash </code> 
+    - <code>$ python manage.py runserver <port\></code>
